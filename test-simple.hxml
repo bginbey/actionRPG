@@ -1,0 +1,6 @@
+# Simple test build
+-cp src
+-main TestMain
+-hl bin/test.hl
+-lib heaps
+-lib hlsdl

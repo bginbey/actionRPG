@@ -1,0 +1,146 @@
+name: Release Build
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  build-all:
+    name: Build All Platforms
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            artifact-name: actionrpg-linux
+          - os: windows-latest
+            platform: windows
+            artifact-name: actionrpg-windows
+          - os: macos-latest
+            platform: macos
+            artifact-name: actionrpg-macos
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Haxe
+      uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.3.6
+    
+    - name: Install dependencies
+      run: |
+        haxelib install heaps
+        haxelib install hlsdl
+        haxelib install format
+    
+    - name: Create build directories
+      run: mkdir -p bin res release
+    
+    # Web build (all platforms can build this)
+    - name: Build web version
+      run: haxe build-web.hxml
+    
+    - name: Package web build
+      run: |
+        mkdir -p release/web
+        cp bin/game.js release/web/
+        cp bin/game.js.map release/web/
+        cp bin/index.html release/web/
+    
+    # Platform-specific native builds
+    - name: Install HashLink (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpng-dev libturbojpeg-dev libvorbis-dev libopenal-dev libsdl2-dev libmbedtls-dev libuv1-dev
+        git clone https://github.com/HaxeFoundation/hashlink.git
+        cd hashlink
+        make
+        sudo make install
+        cd ..
+    
+    - name: Install HashLink (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        Invoke-WebRequest -Uri "https://github.com/HaxeFoundation/hashlink/releases/download/1.15/hl-1.15-win64.zip" -OutFile "hl.zip"
+        Expand-Archive -Path "hl.zip" -DestinationPath "hl"
+        echo "$PWD\hl" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+    
+    - name: Build native (Linux/Windows)
+      if: matrix.os != 'macos-latest'
+      run: |
+        haxe build.hxml
+        cp bin/game.hl release/
+    
+    - name: Copy runtime files (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        cp hl/*.dll release/
+        cp hl/hl.exe release/
+    
+    - name: Copy runtime files (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        cp /usr/local/lib/*.hdll release/ || true
+        cp /usr/local/lib/libhl.so* release/ || true
+    
+    - name: Create macOS note
+      if: matrix.os == 'macos-latest'
+      run: |
+        echo "Native builds are not supported on ARM Macs." > release/README-MAC.txt
+        echo "Please use the web version by opening index.html in a browser." >> release/README-MAC.txt
+    
+    # Create archives
+    - name: Create release archive (Linux/macOS)
+      if: matrix.os != 'windows-latest'
+      run: |
+        cd release
+        tar -czf ../${{ matrix.artifact-name }}.tar.gz *
+        cd ..
+    
+    - name: Create release archive (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        Compress-Archive -Path release\* -DestinationPath ${{ matrix.artifact-name }}.zip
+    
+    # Upload artifacts
+    - name: Upload release artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact-name }}
+        path: |
+          *.tar.gz
+          *.zip
+        retention-days: 30
+    
+    # Upload to release (if triggered by release)
+    - name: Upload to release (Linux/macOS)
+      if: github.event_name == 'release' && matrix.os != 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ matrix.artifact-name }}.tar.gz
+        asset_name: ${{ matrix.artifact-name }}.tar.gz
+        asset_content_type: application/gzip
+    
+    - name: Upload to release (Windows)
+      if: github.event_name == 'release' && matrix.os == 'windows-latest'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ${{ matrix.artifact-name }}.zip
+        asset_name: ${{ matrix.artifact-name }}.zip
+        asset_content_type: application/zip

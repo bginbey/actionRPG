@@ -1,0 +1,9 @@
+# Native C compilation for ARM Macs
+-lib heaps
+-lib hlsdl
+-cp src
+-main Main
+-hl out/main.c
+-D windowSize=1280x720
+-D windowTitle=Action RPG
+-debug

@@ -1,0 +1,10 @@
+{
+    "textures": {
+        "sprites": {
+            "tpath": "sprites",
+            "ttype": "atlas",
+            "tfilter": "Nearest",
+            "size": 1024
+        }
+    }
+}

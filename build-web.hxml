@@ -1,0 +1,10 @@
+# Web build configuration
+-lib heaps
+-cp src
+-main Main
+-js bin/game.js
+-D windowSize=1280x720
+-D windowTitle=Action RPG
+-dce full
+-D canvas=gameCanvas
+-debug

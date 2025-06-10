@@ -1,0 +1,62 @@
+# Haxe build artifacts
+*.n
+*.hl
+*.js
+*.js.map
+*.py
+*.lua
+*.cpp
+obj/
+bin/
+export/
+build/
+dist/
+
+# Heaps.io specific
+res/.tmp/
+res/.cache/
+*.atlas
+
+# Haxelib
+.haxelib/
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.Spotlight-V100
+.Trashes
+
+# Logs
+*.log
+logs/
+
+# Debug files
+*.hxproj
+dump/
+callgrind.out.*
+
+# Temp files
+*.tmp
+*.temp
+*.cache
+
+# Game saves (for development)
+saves/
+*.save
+
+# User-specific
+local.hxml

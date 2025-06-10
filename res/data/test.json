@@ -1,0 +1,11 @@
+{
+    "version": "1.0.0",
+    "testData": {
+        "message": "Resource loading is working!",
+        "playerStats": {
+            "health": 100,
+            "speed": 150,
+            "dashCooldown": 0.5
+        }
+    }
+}

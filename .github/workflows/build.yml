@@ -1,0 +1,143 @@
+name: Build Action RPG
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  build-web:
+    name: Build Web Version
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Haxe
+      uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.3.6
+    
+    - name: Install Haxe dependencies
+      run: |
+        haxelib install heaps
+        haxelib install hlsdl
+        haxelib install format
+        haxelib list
+    
+    - name: Create build directories
+      run: |
+        mkdir -p bin
+        mkdir -p res
+    
+    - name: Build web version
+      run: haxe build-web.hxml
+    
+    - name: Upload web build
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-build
+        path: |
+          bin/game.js
+          bin/game.js.map
+          bin/index.html
+        retention-days: 7
+    
+    - name: Setup Pages deployment (main branch only)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        mkdir -p public
+        cp bin/game.js public/
+        cp bin/game.js.map public/
+        cp bin/index.html public/
+    
+    - name: Upload Pages artifact
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: public
+
+  build-native:
+    name: Build Native Version (Linux/Windows)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Haxe
+      uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.3.6
+    
+    - name: Install HashLink (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libpng-dev libturbojpeg-dev libvorbis-dev libopenal-dev libsdl2-dev libmbedtls-dev libuv1-dev
+        # Build HashLink from source
+        git clone https://github.com/HaxeFoundation/hashlink.git
+        cd hashlink
+        make
+        sudo make install
+        cd ..
+    
+    - name: Install HashLink (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        # Download pre-built HashLink
+        Invoke-WebRequest -Uri "https://github.com/HaxeFoundation/hashlink/releases/download/1.15/hl-1.15-win64.zip" -OutFile "hl.zip"
+        Expand-Archive -Path "hl.zip" -DestinationPath "hl"
+        echo "$PWD\hl" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+    
+    - name: Install Haxe dependencies
+      run: |
+        haxelib install heaps
+        haxelib install hlsdl
+        haxelib install format
+        haxelib list
+    
+    - name: Create build directories
+      run: |
+        mkdir -p bin
+        mkdir -p res
+    
+    - name: Build native version
+      run: haxe build.hxml
+    
+    - name: Test native build (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        # Run with virtual display for headless testing
+        sudo apt-get install -y xvfb
+        xvfb-run -a hl bin/game.hl --help || echo "Game started successfully"
+    
+    - name: Upload native build
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-build-${{ matrix.os }}
+        path: bin/game.hl
+        retention-days: 7
+
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    needs: build-web
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4

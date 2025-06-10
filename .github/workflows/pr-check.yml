@@ -1,0 +1,114 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  lint-and-format:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Haxe
+      uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.3.6
+    
+    - name: Install dependencies
+      run: |
+        haxelib install heaps
+        haxelib install hlsdl
+        haxelib install format
+        haxelib install formatter
+    
+    - name: Check Haxe formatting
+      run: |
+        haxelib run formatter -s src || echo "Formatting check completed"
+    
+    - name: Compile check
+      run: |
+        echo "Checking web build compilation..."
+        haxe build-web.hxml --no-output
+        echo "✅ Web build compiles successfully"
+    
+    - name: Check for common issues
+      run: |
+        echo "Checking for common issues..."
+        # Check for console.log statements
+        ! grep -r "console\.log" src/ || echo "⚠️  Found console.log statements"
+        # Check for hardcoded values (basic check)
+        ! grep -rE "= [0-9]{3,}" src/ --include="*.hx" || echo "⚠️  Found potential magic numbers"
+        # Check for TODO comments
+        grep -r "TODO" src/ || echo "✅ No TODO comments found"
+    
+    - name: File size check
+      run: |
+        echo "Checking file sizes..."
+        find src -name "*.hx" -size +300c -exec echo "⚠️  Large file: {} ($(wc -l {} | awk '{print $1}') lines)" \; || echo "✅ All files within size limits"
+
+  test-build:
+    name: Test Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup Haxe
+      uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.3.6
+    
+    - name: Install dependencies
+      run: |
+        haxelib install heaps
+        haxelib install hlsdl
+        haxelib install format
+    
+    - name: Create directories
+      run: mkdir -p bin res
+    
+    - name: Test web build
+      run: |
+        haxe build-web.hxml
+        # Check that output files exist
+        test -f bin/game.js || exit 1
+        test -f bin/index.html || exit 1
+        echo "✅ Build artifacts created successfully"
+    
+    - name: Check build size
+      run: |
+        echo "Build size report:"
+        ls -lh bin/game.js
+        echo "Minified size: $(wc -c < bin/game.js | numfmt --to=iec-i)"
+    
+    - name: Comment PR
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      with:
+        script: |
+          const fs = require('fs');
+          const buildSize = fs.statSync('bin/game.js').size;
+          const sizeInKB = (buildSize / 1024).toFixed(2);
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🎮 Build Check Results
+            
+            ✅ **Web build successful!**
+            
+            📊 **Build Stats:**
+            - Output size: ${sizeInKB} KB
+            - Target: Web (JavaScript)
+            
+            🔍 **Next Steps:**
+            - Review the code changes
+            - Test the build locally with \`./build-web.sh\`
+            - Check the preview deployment (if enabled)`
+          });

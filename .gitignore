@@ -60,3 +60,9 @@ saves/
 
 # User-specific
 local.hxml
+
+# HashLink source (for local builds)
+hashlink-source/
+hl
+libhl.dylib
+*.hdll

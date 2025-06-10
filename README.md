@@ -1,6 +1,6 @@
 # Action RPG (Hyper Light Drifter Inspired)
 
-[![Build Action RPG](https://github.com/[username]/actionRPG/actions/workflows/build.yml/badge.svg)](https://github.com/[username]/actionRPG/actions/workflows/build.yml)
+[![Build Action RPG](https://github.com/bginbey/actionRPG/actions/workflows/build.yml/badge.svg)](https://github.com/bginbey/actionRPG/actions/workflows/build.yml)
 
 A pixel-art action RPG built with Heaps.io, inspired by Hyper Light Drifter's fluid combat and movement mechanics.
 

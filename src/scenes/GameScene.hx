@@ -9,6 +9,8 @@ import systems.InputManager;
 import utils.TilesetGenerator;
 import utils.ColorPalette;
 import entities.Player;
+import effects.particles.ParticleSystem;
+import effects.RainEffect;
 
 class GameScene extends Scene {
     var debugText: Text;
@@ -19,8 +21,11 @@ class GameScene extends Scene {
     var worldContainer: h2d.Object;
     var uiContainer: h2d.Object;
     var ghostContainer: h2d.Object;
+    var particleSystem: ParticleSystem;
+    var rainEffect: RainEffect;
     var debugGraphics: h2d.Graphics;
     var debugMode: Bool = false;
+    var showHelp: Bool = false;
     var inputManager: InputManager;
     
     public function new(app: Main) {
@@ -62,6 +67,13 @@ class GameScene extends Scene {
         player = new Player(worldContainer, collisionWorld, ghostContainer);
         player.setPosGrid(10, 10);  // Start at grid position 10,10
         
+        // Create particle system after player (renders on top)
+        particleSystem = new ParticleSystem(worldContainer);
+        
+        // Create rain effect
+        rainEffect = new RainEffect(particleSystem, gameCamera, gameWidth, gameHeight);
+        rainEffect.start();  // Start with rain on
+        
         // Set camera to follow player
         gameCamera.follow(player);
         gameCamera.centerOn(player.x, player.y);
@@ -71,11 +83,12 @@ class GameScene extends Scene {
         
         // Debug text in UI container (not affected by camera)
         var pixelDebug = new PixelText(uiContainer);
-        pixelDebug.text = "WASD/Arrows - Space/Shift to dash - F1 free cam - F2 shake - ` debug";
+        pixelDebug.text = "";  // Start with no text
         pixelDebug.setPixelScale(1);
         pixelDebug.x = 10;
         pixelDebug.y = 10;
         debugText = pixelDebug;
+        debugText.visible = false;  // Hidden by default
     }
     
     function loadTestLevel() {
@@ -116,6 +129,7 @@ class GameScene extends Scene {
         tilemap.loadFromData(levelData, tilesetImage);
     }
     
+    
     override public function update(dt: Float): Void {
         super.update(dt);
         
@@ -135,7 +149,32 @@ class GameScene extends Scene {
             if (!debugMode) {
                 debugGraphics.clear();
             }
+            debugText.visible = showHelp || debugMode;
             updateDebugText();
+        }
+        
+        // Toggle rain with R key
+        if (hxd.Key.isPressed(hxd.Key.R)) {
+            rainEffect.toggle();
+            trace("Rain toggled: " + rainEffect.isActive);
+            updateDebugText();
+        }
+        
+        // Toggle help text with H key
+        if (hxd.Key.isPressed(hxd.Key.H)) {
+            showHelp = !showHelp;
+            debugText.visible = showHelp || debugMode;
+            updateDebugText();
+        }
+        
+        // Test burst with B key
+        if (hxd.Key.isPressed(hxd.Key.B)) {
+            particleSystem.burst(player.px, player.py, 50, {
+                speedMin: 50,
+                speedMax: 200,
+                color: 0xFF8800,  // Orange burst
+                gravity: 200
+            });
         }
         
         if (gameCamera.debugMode) {
@@ -190,6 +229,12 @@ class GameScene extends Scene {
         gameCamera.update(dt);
         gameCamera.apply();
         
+        // Update rain effect
+        rainEffect.update(dt);
+        
+        // Update particle system
+        particleSystem.update(dt);
+        
         // Draw debug visualization
         if (debugMode) {
             drawDebug();
@@ -213,6 +258,7 @@ class GameScene extends Scene {
         
         // Draw collision world bounds
         collisionWorld.debugDraw(debugGraphics);
+        
         
         // Draw player sprite rect (red border)
         debugGraphics.lineStyle(1, 0xFF0000, 1);
@@ -283,7 +329,13 @@ class GameScene extends Scene {
     }
     
     function updateDebugText() {
-        var text = "WASD/Arrows - Space/Shift to dash - F1 free cam - F2 shake - ` debug";
+        if (!showHelp && !debugMode) {
+            debugText.text = "";
+            return;
+        }
+        
+        var text = showHelp ? "H help - WASD/Arrows move - Space/Shift dash - F1 cam - F2 shake - R rain - ` debug" : "";
+        
         if (gameCamera.debugMode) {
             text = "FREE CAM MODE - WASD to move camera";
         }
@@ -294,6 +346,12 @@ class GameScene extends Scene {
             var cooldown = Math.ceil(player.getDashCooldownPercent() * 100);
             text += " [DASH CD: " + cooldown + "%]";
         }
+        if (particleSystem != null && debugMode) {
+            text += " [Particles: " + particleSystem.totalActiveParticles + "]";
+        }
+        if (rainEffect != null && debugMode) {
+            text += rainEffect.isActive ? " [RAIN ON]" : " [RAIN OFF]";
+        }
         debugText.text = text;
     }
     
@@ -302,6 +360,12 @@ class GameScene extends Scene {
         if (inputManager != null) {
             inputManager.clear();
         }
+        
+        // Clean up effects
+        if (rainEffect != null) {
+            rainEffect.dispose();
+        }
+        
         super.exit();
     }
 }

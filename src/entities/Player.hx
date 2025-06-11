@@ -41,6 +41,13 @@ class Player extends Entity {
     public var desiredDy:Float = 0;
     public var lastCornerPush:{x:Float, y:Float} = {x: 0, y: 0};
     
+    // Invincibility system
+    public var isInvincible:Bool = false;
+    var invincibilityTime:Float = 0;
+    var invincibilityDuration:Float = 0.5;  // Default invincibility duration
+    var invincibilityFlashInterval:Float = 0.1;  // Flash every 0.1 seconds
+    var invincibilityFlashTimer:Float = 0;
+    
     // Public getters for UI/debug
     public function canDash():Bool {
         return dashCooldownTime <= 0 && !isDashing;
@@ -48,6 +55,12 @@ class Player extends Entity {
     
     public function getDashCooldownPercent():Float {
         return dashCooldownTime > 0 ? dashCooldownTime / dashCooldown : 0;
+    }
+    
+    public function makeInvincible(duration:Float) {
+        isInvincible = true;
+        invincibilityTime = duration;
+        invincibilityFlashTimer = 0;
     }
     
     public function new(parent:h2d.Object, collisionWorld:CollisionWorld, ghostContainer:h2d.Object) {
@@ -103,16 +116,14 @@ class Player extends Entity {
         // Can't dash if on cooldown or already dashing
         if (dashCooldownTime > 0 || isDashing) return false;
         
-        // Determine dash direction
-        if (inputDx != 0 || inputDy != 0) {
-            // Dash in input direction
-            dashDirection.x = inputDx;
-            dashDirection.y = inputDy;
-        } else {
-            // Dash in facing direction if no input
-            dashDirection.x = facingRight ? 1 : -1;
-            dashDirection.y = 0;
+        // Require directional input to dash
+        if (inputDx == 0 && inputDy == 0) {
+            return false;  // No dash without direction
         }
+        
+        // Dash in input direction
+        dashDirection.x = inputDx;
+        dashDirection.y = inputDy;
         
         // Normalize dash direction
         var len = Math.sqrt(dashDirection.x * dashDirection.x + dashDirection.y * dashDirection.y);
@@ -126,6 +137,9 @@ class Player extends Entity {
         dashTime = dashDuration;
         dashCooldownTime = dashCooldown;
         
+        // Make invincible during dash + a bit after
+        makeInvincible(dashDuration + 0.1);  // Extra 0.1s of invincibility after dash
+        
         return true;
     }
     
@@ -133,6 +147,19 @@ class Player extends Entity {
         // Update dash timers
         if (dashCooldownTime > 0) {
             dashCooldownTime -= dt;
+        }
+        
+        // Update invincibility
+        if (isInvincible) {
+            invincibilityTime -= dt;
+            if (invincibilityTime <= 0) {
+                isInvincible = false;
+                alpha = 1.0;  // Ensure full opacity when invincibility ends
+            } else {
+                // Flash effect using sine wave for smooth pulsing
+                var flashFrequency = 10.0;  // Flashes per second
+                alpha = 0.5 + 0.5 * Math.sin(invincibilityTime * flashFrequency * Math.PI * 2);
+            }
         }
         
         if (isDashing) {

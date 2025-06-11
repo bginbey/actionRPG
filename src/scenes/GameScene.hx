@@ -218,8 +218,8 @@ class GameScene extends Scene {
         debugGraphics.lineStyle(1, 0xFF0000, 1);
         debugGraphics.drawRect(player.px - 16, player.py - 16, 32, 32);
         
-        // Draw player collider (cyan when dashing, green normally)
-        var colliderColor = player.isDashing ? 0x00FFFF : 0x00FF00;
+        // Draw player collider (white when invincible, cyan when dashing, green normally)
+        var colliderColor = player.isInvincible ? 0xFFFFFF : (player.isDashing ? 0x00FFFF : 0x00FF00);
         debugGraphics.lineStyle(2, colliderColor, 1);
         debugGraphics.drawCircle(player.px, player.py, player.radius);
         

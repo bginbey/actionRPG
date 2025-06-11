@@ -18,6 +18,7 @@ class GameScene extends Scene {
     var collisionWorld: CollisionWorld;
     var worldContainer: h2d.Object;
     var uiContainer: h2d.Object;
+    var ghostContainer: h2d.Object;
     var debugGraphics: h2d.Graphics;
     var debugMode: Bool = false;
     var inputManager: InputManager;
@@ -54,8 +55,11 @@ class GameScene extends Scene {
         // Set camera bounds based on level size
         gameCamera.setWorldBounds(tilemap.widthInPixels, tilemap.heightInPixels);
         
+        // Create ghost container (behind player)
+        ghostContainer = new h2d.Object(worldContainer);
+        
         // Create player entity
-        player = new Player(worldContainer, collisionWorld);
+        player = new Player(worldContainer, collisionWorld, ghostContainer);
         player.setPosGrid(10, 10);  // Start at grid position 10,10
         
         // Set camera to follow player
@@ -67,7 +71,7 @@ class GameScene extends Scene {
         
         // Debug text in UI container (not affected by camera)
         var pixelDebug = new PixelText(uiContainer);
-        pixelDebug.text = "WASD/Arrows - F1 for free cam - F2 for shake - ` for debug";
+        pixelDebug.text = "WASD/Arrows - Space/Shift to dash - F1 free cam - F2 shake - ` debug";
         pixelDebug.setPixelScale(1);
         pixelDebug.x = 10;
         pixelDebug.y = 10;
@@ -170,6 +174,11 @@ class GameScene extends Scene {
             // Get movement vector from input manager
             var movement = inputManager.getMovementVector();
             player.setInput(movement.x, movement.y);
+            
+            // Dash input (Space or Shift)
+            if (hxd.Key.isPressed(hxd.Key.SPACE) || hxd.Key.isPressed(hxd.Key.SHIFT)) {
+                player.tryDash();
+            }
         }
         
         // Update player
@@ -185,6 +194,9 @@ class GameScene extends Scene {
         if (debugMode) {
             drawDebug();
         }
+        
+        // Update debug text to show dash cooldown
+        updateDebugText();
         
         // ESC to return to menu
         if (hxd.Key.isPressed(hxd.Key.ESCAPE)) {
@@ -206,8 +218,9 @@ class GameScene extends Scene {
         debugGraphics.lineStyle(1, 0xFF0000, 1);
         debugGraphics.drawRect(player.px - 16, player.py - 16, 32, 32);
         
-        // Draw player collider
-        debugGraphics.lineStyle(2, 0x00FF00, 1);
+        // Draw player collider (cyan when dashing, green normally)
+        var colliderColor = player.isDashing ? 0x00FFFF : 0x00FF00;
+        debugGraphics.lineStyle(2, colliderColor, 1);
         debugGraphics.drawCircle(player.px, player.py, player.radius);
         
         // Draw desired movement vector (red if blocked)
@@ -270,12 +283,16 @@ class GameScene extends Scene {
     }
     
     function updateDebugText() {
-        var text = "WASD/Arrows - F1 for free cam - F2 for shake - ` for debug";
+        var text = "WASD/Arrows - Space/Shift to dash - F1 free cam - F2 shake - ` debug";
         if (gameCamera.debugMode) {
             text = "FREE CAM MODE - WASD to move camera";
         }
         if (debugMode) {
             text += " [DEBUG ON]";
+        }
+        if (!player.canDash()) {
+            var cooldown = Math.ceil(player.getDashCooldownPercent() * 100);
+            text += " [DASH CD: " + cooldown + "%]";
         }
         debugText.text = text;
     }

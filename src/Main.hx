@@ -1,24 +1,39 @@
 import hxd.App;
 // import hxd.Res;
-import scenes.SceneManager;
-import scenes.SplashScene;
-import scenes.MenuScene;
-import scenes.GameScene;
+import utils.GameConstants;
 
+/**
+ * Main application entry point
+ * 
+ * Responsibilities:
+ * - Application initialization
+ * - Window and display management  
+ * - Fixed timestep implementation
+ * - Scaling and resolution handling
+ * 
+ * Does NOT handle:
+ * - Game logic (delegated to Game class)
+ * - Scene management (delegated to Game/SceneManager)
+ * - Entity updates (handled by scenes)
+ * 
+ * @see Game for game logic coordination
+ * @see SceneManager for scene handling
+ */
 class Main extends App {
-    // Fixed timestep configuration
-    static inline var FIXED_TIMESTEP: Float = 1.0 / 60.0; // 60 FPS logic
-    static inline var MAX_FRAMESKIP: Int = 5;
+    // Use constants from GameConstants
+    static inline var FIXED_TIMESTEP: Float = GameConstants.FIXED_TIMESTEP;
+    static inline var MAX_FRAMESKIP: Int = GameConstants.MAX_FRAMESKIP;
     
     // Base game resolution
-    static inline var GAME_WIDTH: Int = 320;
-    static inline var GAME_HEIGHT: Int = 240;
+    static inline var GAME_WIDTH: Int = GameConstants.GAME_WIDTH;
+    static inline var GAME_HEIGHT: Int = GameConstants.GAME_HEIGHT;
     
     var accumulator: Float = 0.0;
     var currentTime: Float = 0.0;
     var currentScale: Int = 1;
     
-    public var sceneManager: SceneManager;
+    /** The game instance handles all game logic */
+    public var game: Game;
     
     static function main() {
         new Main();
@@ -53,16 +68,11 @@ class Main extends App {
         // Initialize timing
         currentTime = hxd.Timer.lastTimeStamp;
         
-        // Initialize scene manager
-        sceneManager = new SceneManager(this);
+        // Create the game instance
+        game = new Game(this);
         
-        // Register scenes
-        sceneManager.addScene(new SplashScene(this));
-        sceneManager.addScene(new MenuScene(this));
-        sceneManager.addScene(new GameScene(this));
-        
-        // Start with splash scene
-        sceneManager.switchTo("splash");
+        // Start the game
+        game.start();
         
         // Apply initial scaling
         updateScaling();
@@ -129,22 +139,30 @@ class Main extends App {
         renderGame(dt, alpha);
     }
     
+    /**
+     * Fixed timestep update for deterministic game logic
+     * Called at a consistent rate regardless of frame rate
+     * 
+     * @param dt Fixed delta time (always FIXED_TIMESTEP)
+     */
     function fixedUpdate(dt:Float) {
-        // Fixed timestep game logic goes here
-        sceneManager.fixedUpdate(dt);
+        game.fixedUpdate(dt);
     }
     
+    /**
+     * Variable timestep update for rendering and visual effects
+     * Called once per frame with actual frame time
+     * 
+     * @param dt Actual frame delta time
+     * @param alpha Interpolation factor for smooth motion
+     */
     function renderGame(dt:Float, alpha:Float) {
-        // Rendering and interpolation logic goes here
-        sceneManager.render(dt, alpha);
-        
-        // Update scene manager (for transitions)
-        sceneManager.update(dt);
+        game.update(dt, alpha);
     }
     
     override function onResize() {
         super.onResize();
         updateScaling();
-        sceneManager.resize();
+        game.onResize();
     }
 }

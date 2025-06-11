@@ -98,7 +98,7 @@ class MenuScene extends Scene {
         trace("Starting game...");
         #end
         // Transition to game scene with fade
-        app.sceneManager.switchTo("game", {
+        app.game.sceneManager.switchTo("game", {
             duration: 0.5,
             fadeColor: 0x000000,
             onComplete: null

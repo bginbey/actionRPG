@@ -6,6 +6,7 @@ import h2d.Anim;
 import h2d.col.Circle;
 import utils.ColorPalette;
 import utils.SpriteGenerator;
+import utils.GameConstants;
 import systems.CollisionWorld;
 import effects.GhostPool;
 
@@ -14,21 +15,21 @@ class Player extends Entity {
     var ghostPool:GhostPool;
     
     // Movement
-    public var moveSpeed:Float = 120.0;  // Pixels per second
+    public var moveSpeed:Float = GameConstants.PLAYER_MOVE_SPEED;  // Pixels per second
     public var isMoving:Bool = false;
     public var facingRight:Bool = true;
     
     // Dash mechanics
-    public var dashSpeed:Float = 500.0;  // Pixels per second during dash
-    public var dashDuration:Float = 0.15;  // Dash lasts 0.15 seconds
-    public var dashCooldown:Float = 0.5;   // 0.5 second cooldown between dashes
+    public var dashSpeed:Float = GameConstants.PLAYER_DASH_SPEED;  // Pixels per second during dash
+    public var dashDuration:Float = GameConstants.PLAYER_DASH_DURATION;  // Dash lasts 0.15 seconds
+    public var dashCooldown:Float = GameConstants.PLAYER_DASH_COOLDOWN;   // 0.5 second cooldown between dashes
     
     public var isDashing:Bool = false;
     var dashTime:Float = 0;
     var dashCooldownTime:Float = 0;
     var dashDirection:{x:Float, y:Float} = {x: 0, y: 0};
     var ghostSpawnTimer:Float = 0;
-    var ghostSpawnInterval:Float = 0.02;  // Spawn ghost every 0.02 seconds during dash
+    var ghostSpawnInterval:Float = GameConstants.PLAYER_DASH_GHOST_INTERVAL;  // Spawn ghost every 0.02 seconds during dash
     
     // Input
     var inputDx:Float = 0;
@@ -44,7 +45,7 @@ class Player extends Entity {
     // Invincibility system
     public var isInvincible:Bool = false;
     var invincibilityTime:Float = 0;
-    var invincibilityDuration:Float = 0.5;  // Default invincibility duration
+    var invincibilityDuration:Float = GameConstants.PLAYER_INVINCIBILITY_DURATION;  // Default invincibility duration
     var invincibilityFlashInterval:Float = 0.1;  // Flash every 0.1 seconds
     var invincibilityFlashTimer:Float = 0;
     
@@ -157,7 +158,7 @@ class Player extends Entity {
                 alpha = 1.0;  // Ensure full opacity when invincibility ends
             } else {
                 // Flash effect using sine wave for smooth pulsing
-                var flashFrequency = 10.0;  // Flashes per second
+                var flashFrequency = GameConstants.PLAYER_INVINCIBILITY_FLASH_FREQUENCY;  // Flashes per second
                 alpha = 0.5 + 0.5 * Math.sin(invincibilityTime * flashFrequency * Math.PI * 2);
             }
         }

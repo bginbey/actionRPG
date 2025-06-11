@@ -99,7 +99,7 @@ class SplashScene extends Scene {
                 
                 if (timer >= FADE_DURATION) {
                     // Transition to menu
-                    app.sceneManager.switchTo("menu");
+                    app.game.sceneManager.switchTo("menu");
                 }
         }
     }

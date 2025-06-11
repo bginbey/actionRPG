@@ -3,6 +3,7 @@ package effects;
 import effects.particles.ParticleSystem;
 import effects.particles.ParticleEmitter;
 import systems.Camera;
+import utils.GameConstants;
 
 /**
  * Dramatic angled rain effect
@@ -15,7 +16,7 @@ class RainEffect {
     var gameHeight:Int;
     
     // Rain parameters
-    public var baseEmissionRate:Float = 600;
+    public var baseEmissionRate:Float = GameConstants.RAIN_BASE_EMISSION_RATE;
     public var isActive(default, null):Bool = false;
     
     // Intensity variation
@@ -36,7 +37,7 @@ class RainEffect {
         rainTile.dx = -0.5;  // Center X
         rainTile.dy = -2;    // Center Y
         
-        var rainPool = particleSystem.getPool("rain", rainTile, 2000);
+        var rainPool = particleSystem.getPool("rain", rainTile, GameConstants.RAIN_POOL_SIZE);
         
         // Create rain emitter
         rainEmitter = particleSystem.createEmitter("rain");
@@ -45,14 +46,14 @@ class RainEffect {
         rainEmitter.isEmitting = false;  // Start off
         
         // Rain particle properties - dramatic 45 degree angle
-        var rainAngle = Math.PI * 0.75;  // 135 degrees
-        rainEmitter.speedMin = 350;
-        rainEmitter.speedMax = 550;
-        rainEmitter.angleMin = rainAngle - 0.1;
-        rainEmitter.angleMax = rainAngle + 0.1;
+        var rainAngle = GameConstants.RAIN_ANGLE;  // 135 degrees
+        rainEmitter.speedMin = GameConstants.RAIN_SPEED_MIN;
+        rainEmitter.speedMax = GameConstants.RAIN_SPEED_MAX;
+        rainEmitter.angleMin = rainAngle - GameConstants.RAIN_ANGLE_VARIATION;
+        rainEmitter.angleMax = rainAngle + GameConstants.RAIN_ANGLE_VARIATION;
         
-        rainEmitter.lifeMin = 2.5;
-        rainEmitter.lifeMax = 3.0;
+        rainEmitter.lifeMin = GameConstants.RAIN_LIFE_MIN;
+        rainEmitter.lifeMax = GameConstants.RAIN_LIFE_MAX;
         
         rainEmitter.sizeMin = 1.0;
         rainEmitter.sizeMax = 1.0;
@@ -63,7 +64,7 @@ class RainEffect {
         rainEmitter.startColor = 0xFFFFFF;
         rainEmitter.endColor = 0xCCCCCC;
         
-        rainEmitter.gravity = 50;
+        rainEmitter.gravity = GameConstants.RAIN_GRAVITY;
         rainEmitter.friction = 1.0;
         
         rainEmitter.rotationSpeedMin = 0;
@@ -124,8 +125,8 @@ class RainEffect {
         rainEmitter.emissionRate = baseEmissionRate * intensity;
         
         // Vary speed with intensity
-        rainEmitter.speedMin = 350 * (0.8 + intensity * 0.2);
-        rainEmitter.speedMax = 550 * (0.8 + intensity * 0.2);
+        rainEmitter.speedMin = GameConstants.RAIN_SPEED_MIN * (0.8 + intensity * 0.2);
+        rainEmitter.speedMax = GameConstants.RAIN_SPEED_MAX * (0.8 + intensity * 0.2);
     }
     
     public function dispose() {

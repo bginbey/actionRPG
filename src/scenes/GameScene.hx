@@ -8,6 +8,7 @@ import systems.CollisionWorld;
 import systems.InputManager;
 import utils.TilesetGenerator;
 import utils.ColorPalette;
+import utils.GameConstants;
 import entities.Player;
 import effects.particles.ParticleSystem;
 import effects.RainEffect;
@@ -144,7 +145,7 @@ class GameScene extends Scene {
         }
         
         // Toggle debug visualization with backtick key
-        if (hxd.Key.isPressed(192)) { // Backtick/tilde key
+        if (hxd.Key.isPressed(GameConstants.DEBUG_KEY_TOGGLE)) { // Backtick/tilde key
             debugMode = !debugMode;
             if (!debugMode) {
                 debugGraphics.clear();
@@ -179,7 +180,7 @@ class GameScene extends Scene {
         
         if (gameCamera.debugMode) {
             // Free camera movement
-            var camSpeed = 200.0;
+            var camSpeed = GameConstants.CAMERA_DEBUG_SPEED;
             if (hxd.Key.isDown(hxd.Key.W)) gameCamera.y -= camSpeed * dt;
             if (hxd.Key.isDown(hxd.Key.S)) gameCamera.y += camSpeed * dt;
             if (hxd.Key.isDown(hxd.Key.A)) gameCamera.x -= camSpeed * dt;
@@ -245,7 +246,7 @@ class GameScene extends Scene {
         
         // ESC to return to menu
         if (hxd.Key.isPressed(hxd.Key.ESCAPE)) {
-            app.sceneManager.switchTo("menu", {
+            app.game.sceneManager.switchTo("menu", {
                 duration: 0.3,
                 fadeColor: 0x000000,
                 onComplete: null
@@ -275,8 +276,8 @@ class GameScene extends Scene {
             debugGraphics.lineStyle(3, color, 0.8);
             debugGraphics.moveTo(player.px, player.py);
             debugGraphics.lineTo(
-                player.px + player.desiredDx * 50, 
-                player.py + player.desiredDy * 50
+                player.px + player.desiredDx * GameConstants.DEBUG_VECTOR_SCALE, 
+                player.py + player.desiredDy * GameConstants.DEBUG_VECTOR_SCALE
             );
             
             // Draw collision indicators
@@ -299,8 +300,8 @@ class GameScene extends Scene {
             debugGraphics.lineStyle(2, 0xFFFF00, 1);
             debugGraphics.moveTo(player.px, player.py);
             debugGraphics.lineTo(
-                player.px + player.dx * 50, 
-                player.py + player.dy * 50
+                player.px + player.dx * GameConstants.DEBUG_VECTOR_SCALE, 
+                player.py + player.dy * GameConstants.DEBUG_VECTOR_SCALE
             );
         }
         

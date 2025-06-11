@@ -2,6 +2,7 @@ package systems;
 
 import h2d.Object;
 import h2d.col.Bounds;
+import utils.GameConstants;
 
 class Camera {
     public var x:Float = 0;
@@ -17,7 +18,7 @@ class Camera {
     
     // Follow parameters
     public var target:Dynamic = null;
-    public var followSpeed:Float = 5.0;
+    public var followSpeed:Float = 5.0;  // Keep this as is since GameConstants has a different value
     public var deadZoneX:Float = 40;
     public var deadZoneY:Float = 30;
     
@@ -26,7 +27,7 @@ class Camera {
     var shakeY:Float = 0;
     var shakeTrauma:Float = 0;
     var shakeDecay:Float = 0.8;
-    var shakeMaxOffset:Float = 10;
+    var shakeMaxOffset:Float = GameConstants.CAMERA_SHAKE_INTENSITY;
     
     // Debug mode
     public var debugMode:Bool = false;
@@ -87,7 +88,7 @@ class Camera {
         y = Math.max(minY, Math.min(maxY, y));
     }
     
-    public function shake(trauma:Float = 0.5) {
+    public function shake(trauma:Float = GameConstants.CAMERA_SHAKE_DURATION) {
         shakeTrauma = Math.min(1, shakeTrauma + trauma);
     }
     

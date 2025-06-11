@@ -33,6 +33,9 @@ Progressive milestones to build a Hyper Light Drifter-inspired action RPG using 
 
 ## Phase 2: Core Systems
 ### Milestone 2.1: Game Architecture
+- [ ] Setup Resurrect 64 color palette system
+- [ ] Create ColorPalette utility class
+- [ ] Configure all UI elements to use palette colors
 - [ ] Create GameScene class
 - [ ] Implement entity management system
 - [ ] Setup debug overlay (FPS, entity count)

@@ -10,6 +10,7 @@ class SplashScene extends Scene {
     
     var splashText: Text;
     var studioText: Text;
+    var skipText: Text;
     var fadeOverlay: h2d.Graphics;
     
     var timer: Float = 0.0;
@@ -23,8 +24,8 @@ class SplashScene extends Scene {
         super.enter();
         
         // Create splash content
-        var centerX = width * 0.5;
-        var centerY = height * 0.5;
+        var centerX = gameWidth * 0.5;
+        var centerY = gameHeight * 0.5;
         
         // Studio name
         var pixelStudio = new PixelText(this);
@@ -44,6 +45,16 @@ class SplashScene extends Scene {
         pixelSplash.y = centerY + 10;
         splashText = pixelSplash;
         
+        // Skip hint
+        var pixelSkip = new PixelText(this);
+        pixelSkip.text = "Press SPACE to skip";
+        pixelSkip.textAlign = Center;
+        pixelSkip.setPixelScale(1);
+        pixelSkip.x = centerX;
+        pixelSkip.y = gameHeight - 40;
+        pixelSkip.alpha = 0.5;
+        skipText = pixelSkip;
+        
         // Fade overlay
         fadeOverlay = new h2d.Graphics(this);
         updateFadeOverlay(1.0); // Start fully black
@@ -54,6 +65,15 @@ class SplashScene extends Scene {
     
     override public function update(dt: Float): Void {
         super.update(dt);
+        
+        // Skip splash on any key press
+        if (hxd.Key.isPressed(hxd.Key.SPACE) || hxd.Key.isPressed(hxd.Key.ENTER) || 
+            hxd.Key.isPressed(hxd.Key.ESCAPE)) {
+            if (state != FadeOut) {
+                timer = 0.0;
+                state = FadeOut;
+            }
+        }
         
         timer += dt;
         
@@ -87,15 +107,15 @@ class SplashScene extends Scene {
     function updateFadeOverlay(alpha: Float): Void {
         fadeOverlay.clear();
         fadeOverlay.beginFill(0x000000, alpha);
-        fadeOverlay.drawRect(0, 0, width, height);
+        fadeOverlay.drawRect(0, 0, gameWidth, gameHeight);
         fadeOverlay.endFill();
     }
     
     override public function resize(): Void {
         super.resize();
         
-        var centerX = width * 0.5;
-        var centerY = height * 0.5;
+        var centerX = gameWidth * 0.5;
+        var centerY = gameHeight * 0.5;
         
         if (studioText != null) {
             studioText.x = centerX;
@@ -105,6 +125,11 @@ class SplashScene extends Scene {
         if (splashText != null) {
             splashText.x = centerX;
             splashText.y = centerY + 10;
+        }
+        
+        if (skipText != null) {
+            skipText.x = centerX;
+            skipText.y = gameHeight - 40;
         }
         
         if (fadeOverlay != null && state != null) {

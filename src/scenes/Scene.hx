@@ -42,6 +42,18 @@ class Scene extends H2dScene {
     
     public function resize(): Void {
         // Called when window is resized
+        // Base resolution is fixed, scenes should use Main.GAME_WIDTH/HEIGHT
+    }
+    
+    public var gameWidth(get, never): Int;
+    public var gameHeight(get, never): Int;
+    
+    inline function get_gameWidth(): Int {
+        return 320; // Match Main.GAME_WIDTH
+    }
+    
+    inline function get_gameHeight(): Int {
+        return 240; // Match Main.GAME_HEIGHT
     }
     
     override public function dispose(): Void {

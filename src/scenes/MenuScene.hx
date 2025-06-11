@@ -1,17 +1,14 @@
 package scenes;
 
 import h2d.Text;
-import h2d.Interactive;
-import h2d.Graphics;
 import ui.PixelText;
 
 class MenuScene extends Scene {
-    var titleText: Text;
     var menuItems: Array<MenuItem> = [];
     var selectedIndex: Int = 0;
     
-    static inline var MENU_ITEM_SPACING: Float = 40;
-    static inline var MENU_START_Y: Float = 200;
+    static inline var MENU_ITEM_SPACING: Float = 30;
+    static inline var MENU_ITEM_COUNT: Int = 4;  // Space for 4 items
     
     public function new(app: Main) {
         super(app, "menu");
@@ -20,14 +17,12 @@ class MenuScene extends Scene {
     override public function enter(): Void {
         super.enter();
         
-        // Create title
-        var pixelTitle = new PixelText(this);
-        pixelTitle.text = "ACTION RPG";
-        pixelTitle.textAlign = Center;
-        pixelTitle.setPixelScale(4);
-        pixelTitle.x = width * 0.5;
-        pixelTitle.y = 80;
-        titleText = pixelTitle;
+        // Clear any existing menu items
+        for (item in menuItems) {
+            item.remove();
+        }
+        menuItems = [];
+        selectedIndex = 0;
         
         // Create menu items
         createMenuItem("START GAME", 0, startGame);
@@ -50,23 +45,13 @@ class MenuScene extends Scene {
         text.setPixelScale(2);
         
         item.textField = text;
-        item.x = width * 0.5;
-        item.y = MENU_START_Y + (index * MENU_ITEM_SPACING);
         
-        // Create interactive area
-        var bounds = text.getBounds();
-        var interactive = new Interactive(bounds.width, bounds.height, item);
-        interactive.x = -bounds.width * 0.5;
-        interactive.y = 0;
+        // Calculate vertical centering for menu items
+        var totalHeight = (menuItems.length + 1) * MENU_ITEM_SPACING;
+        var startY = (gameHeight - totalHeight) * 0.5;
         
-        interactive.onOver = function(_) {
-            selectedIndex = index;
-            updateSelection();
-        };
-        
-        interactive.onClick = function(_) {
-            selectCurrentItem();
-        };
+        item.x = gameWidth * 0.5;
+        item.y = startY + (index * MENU_ITEM_SPACING);
         
         menuItems.push(item);
     }
@@ -91,9 +76,9 @@ class MenuScene extends Scene {
             var item = menuItems[i];
             if (i == selectedIndex) {
                 item.textField.color.set(1.0, 1.0, 0.0); // Yellow
-                item.scaleX = item.scaleY = 1.1;
+                item.scaleX = item.scaleY = 1.2;
             } else {
-                item.textField.color.set(1.0, 1.0, 1.0); // White
+                item.textField.color.set(0.7, 0.7, 0.7); // Light gray
                 item.scaleX = item.scaleY = 1.0;
             }
         }
@@ -138,12 +123,14 @@ class MenuScene extends Scene {
     override public function resize(): Void {
         super.resize();
         
-        if (titleText != null) {
-            titleText.x = width * 0.5;
-        }
+        // Recalculate menu positions
+        var totalHeight = menuItems.length * MENU_ITEM_SPACING;
+        var startY = (gameHeight - totalHeight) * 0.5;
         
-        for (item in menuItems) {
-            item.x = width * 0.5;
+        for (i in 0...menuItems.length) {
+            var item = menuItems[i];
+            item.x = gameWidth * 0.5;
+            item.y = startY + (i * MENU_ITEM_SPACING);
         }
     }
 }

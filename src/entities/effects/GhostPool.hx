@@ -1,4 +1,4 @@
-package effects;
+package entities.effects;
 
 import h2d.Tile;
 import h2d.Object;

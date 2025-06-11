@@ -10,8 +10,8 @@ import utils.TilesetGenerator;
 import utils.ColorPalette;
 import utils.GameConstants;
 import entities.Player;
-import effects.particles.ParticleSystem;
-import effects.RainEffect;
+import systems.effects.particles.ParticleSystem;
+import entities.effects.RainEffect;
 
 class GameScene extends Scene {
     var debugText: Text;

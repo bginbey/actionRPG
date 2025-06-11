@@ -1,6 +1,6 @@
-package effects;
+package entities.effects;
 
-import effects.particles.ParticleSystem;
+import systems.effects.particles.ParticleSystem;
 import utils.ColorPalette;
 
 /**

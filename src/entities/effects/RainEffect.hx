@@ -1,12 +1,30 @@
-package effects;
+package entities.effects;
 
-import effects.particles.ParticleSystem;
-import effects.particles.ParticleEmitter;
+import systems.effects.particles.ParticleSystem;
+import systems.effects.particles.ParticleEmitter;
 import systems.Camera;
 import utils.GameConstants;
 
 /**
  * Dramatic angled rain effect
+ * 
+ * Creates a realistic rain effect that follows the camera.
+ * Uses the particle system to efficiently render many rain drops.
+ * 
+ * Features:
+ * - Angled rain (45 degrees) for dramatic effect
+ * - Intensity variation using multiple sine waves
+ * - Camera-following to maintain rain coverage
+ * - Efficient particle pooling
+ * 
+ * Visual design:
+ * - Each rain drop is a 1x4 pixel white line
+ * - Falls at 45-degree angle
+ * - Varies in speed and intensity over time
+ * - Creates natural-looking weather patterns
+ * 
+ * @see ParticleSystem for the underlying particle engine
+ * @see GameScene for integration example
  */
 class RainEffect {
     var particleSystem:ParticleSystem;

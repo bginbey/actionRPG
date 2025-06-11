@@ -1,4 +1,4 @@
-package effects.particles;
+package systems.effects.particles;
 
 import h2d.Object;
 import h2d.Tile;
@@ -7,7 +7,33 @@ import utils.ColorPalette;
 
 /**
  * Main particle system manager
- * Handles multiple emitters and particle pools
+ * 
+ * Core system that manages all particle effects in the game.
+ * Handles multiple emitters and particle pools for different effect types.
+ * 
+ * Architecture:
+ * - ParticleSystem (this) - Main manager, handles all pools and emitters
+ * - ParticlePool - Manages a pool of similar particles (e.g., "rain", "dust")
+ * - ParticleEmitter - Spawns particles with specific patterns
+ * - Particle - Individual particle with physics and visuals
+ * 
+ * Performance considerations:
+ * - Uses object pooling to avoid allocations during gameplay
+ * - Particles are recycled when their life expires
+ * - Pools automatically expand if needed
+ * 
+ * Usage:
+ * ```haxe
+ * var particleSystem = new ParticleSystem(scene);
+ * var emitter = particleSystem.createEmitter("dust");
+ * emitter.x = 100;
+ * emitter.y = 100;
+ * emitter.burst(20);
+ * ```
+ * 
+ * @see ParticleEmitter for emission patterns
+ * @see Particle for individual particle behavior
+ * @see RainEffect for a complete effect example
  */
 class ParticleSystem extends Object {
     var pools:Map<String, ParticlePool>;

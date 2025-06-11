@@ -1,4 +1,4 @@
-package effects.particles;
+package systems.effects.particles;
 
 import h2d.Bitmap;
 import h2d.Tile;

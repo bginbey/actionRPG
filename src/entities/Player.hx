@@ -8,7 +8,7 @@ import utils.ColorPalette;
 import utils.SpriteGenerator;
 import utils.GameConstants;
 import systems.CollisionWorld;
-import effects.GhostPool;
+import entities.effects.GhostPool;
 
 class Player extends Entity {
     var collisionWorld:CollisionWorld;

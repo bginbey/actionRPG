@@ -46,6 +46,12 @@ class GameConstants {
     /** Player collision radius in pixels */
     public static inline var PLAYER_RADIUS:Float = 8.0;
     
+    /** Player starting health */
+    public static inline var PLAYER_HEALTH:Float = 100.0;
+    
+    /** Player maximum health */
+    public static inline var PLAYER_MAX_HEALTH:Float = 100.0;
+    
     // === Entity Constants ===
     /** Default collision radius for entities */
     public static inline var ENTITY_DEFAULT_RADIUS:Float = 8.0;
@@ -141,4 +147,38 @@ class GameConstants {
     
     /** Player run animation speed */
     public static inline var PLAYER_ANIM_RUN_FPS:Int = 10;
+    
+    // === Combat Constants ===
+    /** Base sword damage */
+    public static inline var SWORD_BASE_DAMAGE:Float = 10.0;
+    
+    /** Sword swing duration in seconds */
+    public static inline var SWORD_SWING_DURATION:Float = 0.2;
+    
+    /** Combo window - time allowed between attacks to continue combo */
+    public static inline var COMBO_WINDOW:Float = 0.5;
+    
+    /** Maximum combo count */
+    public static inline var MAX_COMBO_COUNT:Int = 3;
+    
+    /** Combo damage multipliers */
+    public static inline var COMBO_MULTIPLIER_1:Float = 1.0;
+    public static inline var COMBO_MULTIPLIER_2:Float = 1.25;
+    public static inline var COMBO_MULTIPLIER_3:Float = 1.5;
+    
+    /** Attack cooldown after combo finishes */
+    public static inline var ATTACK_COOLDOWN:Float = 0.3;
+    
+    /** Sword hitbox size (width x height) */
+    public static inline var SWORD_HITBOX_WIDTH:Float = 32.0;
+    public static inline var SWORD_HITBOX_HEIGHT:Float = 24.0;
+    
+    /** Sword hitbox offset from player center */
+    public static inline var SWORD_HITBOX_OFFSET:Float = 20.0;
+    
+    /** Hit pause duration when landing a hit */
+    public static inline var HIT_PAUSE_DURATION:Float = 0.05;
+    
+    /** Knockback force applied to enemies */
+    public static inline var KNOCKBACK_FORCE:Float = 200.0;
 }

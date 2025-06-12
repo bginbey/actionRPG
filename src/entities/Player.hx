@@ -9,15 +9,48 @@ import utils.SpriteGenerator;
 import utils.GameConstants;
 import systems.CollisionWorld;
 import entities.effects.GhostPool;
+import entities.effects.SwordSwing;
+import components.IHealth;
+import components.Hitbox;
 
-class Player extends Entity {
+class Player extends Entity implements IHealth {
     var collisionWorld:CollisionWorld;
     var ghostPool:GhostPool;
+    
+    // Health properties
+    private var _health:Float;
+    private var _maxHealth:Float;
+    private var _isDead:Bool = false;
+    
+    public var health(get, set):Float;
+    public var maxHealth(get, set):Float;
+    
+    function get_health():Float return _health;
+    function set_health(v:Float):Float {
+        _health = Math.max(0, v);
+        if (_health <= 0 && !_isDead) {
+            onDeath();
+        }
+        return _health;
+    }
+    
+    function get_maxHealth():Float return _maxHealth;
+    function set_maxHealth(v:Float):Float {
+        _maxHealth = Math.max(1, v);
+        // Ensure current health doesn't exceed new max
+        if (_health > _maxHealth) {
+            _health = _maxHealth;
+        }
+        return _maxHealth;
+    }
     
     // Movement
     public var moveSpeed:Float = GameConstants.PLAYER_MOVE_SPEED;  // Pixels per second
     public var isMoving:Bool = false;
     public var facingRight:Bool = true;
+    
+    // Direction (for 8-way attacks)
+    public var facingAngle:Float = 0;  // Angle in radians (0 = right, PI/2 = down, PI = left, -PI/2 = up)
     
     // Dash mechanics
     public var dashSpeed:Float = GameConstants.PLAYER_DASH_SPEED;  // Pixels per second during dash
@@ -49,6 +82,16 @@ class Player extends Entity {
     var invincibilityFlashInterval:Float = 0.1;  // Flash every 0.1 seconds
     var invincibilityFlashTimer:Float = 0;
     
+    // Combat system
+    public var isAttacking:Bool = false;
+    var attackTime:Float = 0;
+    var attackCooldown:Float = 0;
+    var comboCount:Int = 0;
+    var comboWindow:Float = 0;
+    var currentHitbox:Hitbox;
+    var attackQueued:Bool = false;
+    var currentSwingEffect:SwordSwing;
+    
     // Public getters for UI/debug
     public function canDash():Bool {
         return dashCooldownTime <= 0 && !isDashing;
@@ -56,6 +99,18 @@ class Player extends Entity {
     
     public function getDashCooldownPercent():Float {
         return dashCooldownTime > 0 ? dashCooldownTime / dashCooldown : 0;
+    }
+    
+    public function getCurrentHitbox():Hitbox {
+        return isAttacking ? currentHitbox : null;
+    }
+    
+    public function getComboCount():Int {
+        return comboCount;
+    }
+    
+    public function getFacingAngle():Float {
+        return facingAngle;
     }
     
     public function makeInvincible(duration:Float) {
@@ -67,6 +122,10 @@ class Player extends Entity {
     public function new(parent:h2d.Object, collisionWorld:CollisionWorld, ghostContainer:h2d.Object) {
         super(parent);
         this.collisionWorld = collisionWorld;
+        
+        // Initialize health
+        _maxHealth = GameConstants.PLAYER_MAX_HEALTH;
+        _health = GameConstants.PLAYER_HEALTH;
         
         // Create ghost pool in a container behind the player
         ghostPool = new GhostPool(ghostContainer);
@@ -108,9 +167,11 @@ class Player extends Entity {
         inputDy = dy;
         isMoving = dx != 0 || dy != 0;
         
-        // Update facing direction
-        if (dx > 0) facingRight = true;
-        else if (dx < 0) facingRight = false;
+        // Update facing direction and angle
+        if (dx != 0 || dy != 0) {
+            facingAngle = Math.atan2(dy, dx);
+            facingRight = dx >= 0;
+        }
     }
     
     public function tryDash():Bool {
@@ -144,10 +205,103 @@ class Player extends Entity {
         return true;
     }
     
+    public function tryAttack():Bool {
+        // Can't attack while dashing or dead
+        if (isDashing || _isDead) return false;
+        
+        // If already attacking, queue next attack if within combo window
+        if (isAttacking) {
+            if (comboWindow > 0 && comboCount < GameConstants.MAX_COMBO_COUNT) {
+                attackQueued = true;
+                return true;
+            }
+            return false;
+        }
+        
+        // Check if on cooldown
+        if (attackCooldown > 0) return false;
+        
+        // Start attack
+        isAttacking = true;
+        attackTime = GameConstants.SWORD_SWING_DURATION;
+        
+        // Increment combo or reset
+        if (comboWindow > 0 && comboCount < GameConstants.MAX_COMBO_COUNT) {
+            comboCount++;
+        } else {
+            comboCount = 1;
+        }
+        
+        // Create hitbox
+        var damage = GameConstants.SWORD_BASE_DAMAGE;
+        
+        // Apply combo multiplier
+        switch(comboCount) {
+            case 1: damage *= GameConstants.COMBO_MULTIPLIER_1;
+            case 2: damage *= GameConstants.COMBO_MULTIPLIER_2;
+            case 3: damage *= GameConstants.COMBO_MULTIPLIER_3;
+        }
+        
+        currentHitbox = new Hitbox(damage, GameConstants.KNOCKBACK_FORCE);
+        currentHitbox.owner = this;
+        
+        // Position hitbox based on facing angle (8 directions)
+        var hitboxX = px + Math.cos(facingAngle) * GameConstants.SWORD_HITBOX_OFFSET;
+        var hitboxY = py + Math.sin(facingAngle) * GameConstants.SWORD_HITBOX_OFFSET;
+        currentHitbox.setBounds(hitboxX, hitboxY, GameConstants.SWORD_HITBOX_WIDTH, GameConstants.SWORD_HITBOX_HEIGHT);
+        
+        // Create visual effect
+        currentSwingEffect = new SwordSwing(parent, px, py, facingAngle, comboCount);
+        
+        // TODO: Play attack animation
+        // TODO: Play attack sound
+        
+        return true;
+    }
+    
     override function update(dt:Float) {
         // Update dash timers
         if (dashCooldownTime > 0) {
             dashCooldownTime -= dt;
+        }
+        
+        // Update combat timers
+        if (attackCooldown > 0) {
+            attackCooldown -= dt;
+        }
+        
+        if (comboWindow > 0) {
+            comboWindow -= dt;
+            if (comboWindow <= 0) {
+                comboCount = 0;
+            }
+        }
+        
+        // Update attack
+        if (isAttacking) {
+            attackTime -= dt;
+            if (attackTime <= 0) {
+                isAttacking = false;
+                
+                // Check for queued attack
+                if (attackQueued) {
+                    attackQueued = false;
+                    tryAttack();
+                } else {
+                    // Set combo window
+                    comboWindow = GameConstants.COMBO_WINDOW;
+                    
+                    // Set cooldown after full combo
+                    if (comboCount >= GameConstants.MAX_COMBO_COUNT) {
+                        attackCooldown = GameConstants.ATTACK_COOLDOWN;
+                        comboCount = 0;
+                        comboWindow = 0;
+                    }
+                }
+                
+                // Clear hitbox
+                currentHitbox = null;
+            }
         }
         
         // Update invincibility
@@ -183,6 +337,10 @@ class Player extends Entity {
             // Use dash speed and direction
             desiredDx = dashDirection.x * dashSpeed * dt;
             desiredDy = dashDirection.y * dashSpeed * dt;
+        } else if (isAttacking) {
+            // No movement during attack (root motion)
+            desiredDx = 0;
+            desiredDy = 0;
         } else {
             // Normal movement based on input
             desiredDx = inputDx * moveSpeed * dt;
@@ -239,5 +397,67 @@ class Player extends Entity {
         
         // Update ghost pool
         ghostPool.update(dt);
+        
+        // Update sword swing effect
+        if (currentSwingEffect != null) {
+            currentSwingEffect.update(dt);
+            // Check if it removed itself
+            if (currentSwingEffect.parent == null) {
+                currentSwingEffect = null;
+            }
+        }
+    }
+    
+    // IHealth implementation
+    public function takeDamage(amount:Float, ?source:Entity):Float {
+        // Can't take damage if invincible or dead
+        if (isInvincible || _isDead) return 0;
+        
+        var actualDamage = amount;
+        
+        // Apply damage
+        health -= actualDamage;
+        
+        // Trigger invincibility frames
+        makeInvincible(GameConstants.PLAYER_INVINCIBILITY_DURATION);
+        
+        // TODO: Add visual feedback (flash red, particles, etc.)
+        // TODO: Add audio feedback
+        
+        return actualDamage;
+    }
+    
+    public function heal(amount:Float):Float {
+        if (_isDead) return 0;
+        
+        var previousHealth = _health;
+        health = Math.min(_health + amount, _maxHealth);
+        var actualHealing = _health - previousHealth;
+        
+        // TODO: Add healing visual effect
+        // TODO: Add healing sound
+        
+        return actualHealing;
+    }
+    
+    public function isDead():Bool {
+        return _isDead;
+    }
+    
+    public function onDeath():Void {
+        if (_isDead) return;
+        _isDead = true;
+        
+        // TODO: Play death animation
+        // TODO: Disable player controls
+        // TODO: Trigger game over or respawn sequence
+        // For now, just make the player invisible
+        visible = false;
+        
+        // Remove from collision world
+        // TODO: Implement removeCollider in CollisionWorld
+        // if (collider != null) {
+        //     collisionWorld.removeCollider(collider);
+        // }
     }
 }

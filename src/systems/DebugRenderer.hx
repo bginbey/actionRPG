@@ -168,6 +168,30 @@ class DebugRenderer {
         // Precise position indicator
         graphics.lineStyle(1, 0xFFFFFF, 1);
         graphics.drawCircle(player.px, player.py, 2);
+        
+        // === Facing direction indicator ===
+        // Show which way player is facing
+        graphics.lineStyle(2, 0x00FF00, 0.8);  // Green arrow
+        var arrowLength = 20;
+        var angle = player.getFacingAngle();
+        graphics.moveTo(player.px, player.py);
+        graphics.lineTo(
+            player.px + Math.cos(angle) * arrowLength,
+            player.py + Math.sin(angle) * arrowLength
+        );
+        
+        // === Attack hitbox ===
+        // Show active attack hitbox
+        var hitbox = player.getCurrentHitbox();
+        if (hitbox != null && hitbox.bounds != null) {
+            graphics.lineStyle(2, 0xFF00FF, 0.8);  // Magenta for attack
+            graphics.drawRect(
+                hitbox.bounds.x,
+                hitbox.bounds.y,
+                hitbox.bounds.width,
+                hitbox.bounds.height
+            );
+        }
     }
     
     /**
@@ -185,7 +209,8 @@ class DebugRenderer {
         canDash:Bool,
         dashCooldownPercent:Float,
         ?particleSystem:ParticleSystem,
-        ?rainEffect:RainEffect
+        ?rainEffect:RainEffect,
+        ?player:Player
     ):String {
         var text = "";
         
@@ -208,6 +233,16 @@ class DebugRenderer {
         
         if (rainEffect != null && enabled) {
             text += rainEffect.isActive ? " [RAIN ON]" : " [RAIN OFF]";
+        }
+        
+        if (player != null && enabled) {
+            if (player.isAttacking) {
+                text += " [ATTACKING]";
+            }
+            if (player.getComboCount() > 0) {
+                text += " [COMBO: " + player.getComboCount() + "]";
+            }
+            text += " [HP: " + Math.ceil(player.health) + "/" + Math.ceil(player.maxHealth) + "]";
         }
         
         return text;

@@ -107,7 +107,7 @@ class GameHUD {
      * @return Formatted help text
      */
     public function getHelpText():String {
-        return "H help - WASD/Arrows move - Space/Shift dash - F1 cam - F2 shake - R rain - ` debug";
+        return "H help - WASD/Arrows move - Space/Shift dash - J/X attack - F1 cam - F2 shake - R rain - ` debug";
     }
     
     /**

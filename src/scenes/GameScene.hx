@@ -232,6 +232,11 @@ class GameScene extends Scene {
         if (hxd.Key.isPressed(hxd.Key.SPACE) || hxd.Key.isPressed(hxd.Key.SHIFT)) {
             player.tryDash();
         }
+        
+        // Attack
+        if (hxd.Key.isPressed(hxd.Key.J) || hxd.Key.isPressed(hxd.Key.X)) {
+            player.tryAttack();
+        }
     }
     
     /**
@@ -263,7 +268,8 @@ class GameScene extends Scene {
                 player.canDash(),
                 player.getDashCooldownPercent(),
                 particleSystem,
-                rainEffect
+                rainEffect,
+                player
             );
         }
         

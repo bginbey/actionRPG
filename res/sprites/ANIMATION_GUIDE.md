@@ -44,6 +44,12 @@ Key poses:
 
 ### 4. ATTACK COMBO (6 frames each)
 
+**Canvas Size**: Use 64x64 pixels for all attack frames (instead of 32x32)
+- Character body remains in the center 32x32 area
+- Sword/weapon extends into the extra space
+- Pivot point at (32, 32) for 64x64 sprites
+- This allows the weapon to visually match the 20px hit range
+
 #### Attack 1 - Horizontal Slash
 - Frame 1-2: 2 ticks each - Wind up
 - Frame 3: 2 ticks - Swing start
@@ -137,9 +143,9 @@ Will need to update:
 
 ## Quick Checklist Per Animation
 
-- [ ] All frames are 32x32 pixels
+- [ ] All frames are 32x32 pixels (64x64 for attack animations)
 - [ ] Character faces RIGHT
-- [ ] Pivot is at center (16,16)
+- [ ] Pivot is at center (16,16 for 32x32, 32,32 for 64x64)
 - [ ] Uses Resurrect 64 palette colors
 - [ ] Clear readable silhouette
 - [ ] Consistent volume/proportions

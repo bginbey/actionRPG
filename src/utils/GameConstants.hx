@@ -181,4 +181,41 @@ class GameConstants {
     
     /** Knockback force applied to enemies */
     public static inline var KNOCKBACK_FORCE:Float = 200.0;
+    
+    // === Enemy Constants ===
+    /** Basic enemy health */
+    public static inline var ENEMY_HEALTH:Float = 30.0;
+    
+    /** Basic enemy movement speed */
+    public static inline var ENEMY_MOVE_SPEED:Float = 60.0;
+    
+    /** Enemy patrol speed (slower than chase) */
+    public static inline var ENEMY_PATROL_SPEED:Float = 40.0;
+    
+    /** Enemy chase speed (faster than patrol) */
+    public static inline var ENEMY_CHASE_SPEED:Float = 80.0;
+    
+    /** Enemy sight range for detecting player */
+    public static inline var ENEMY_SIGHT_RANGE:Float = 120.0;
+    
+    /** Enemy attack range */
+    public static inline var ENEMY_ATTACK_RANGE:Float = 30.0;
+    
+    /** Enemy attack damage */
+    public static inline var ENEMY_ATTACK_DAMAGE:Float = 5.0;
+    
+    /** Enemy attack cooldown */
+    public static inline var ENEMY_ATTACK_COOLDOWN:Float = 1.0;
+    
+    /** Enemy collision radius */
+    public static inline var ENEMY_RADIUS:Float = 10.0;
+    
+    /** Enemy knockback recovery time */
+    public static inline var ENEMY_KNOCKBACK_RECOVERY:Float = 0.3;
+    
+    /** Enemy patrol waypoint wait time */
+    public static inline var ENEMY_PATROL_WAIT_TIME:Float = 2.0;
+    
+    /** Enemy hurt flash duration */
+    public static inline var ENEMY_HURT_FLASH_DURATION:Float = 0.2;
 }

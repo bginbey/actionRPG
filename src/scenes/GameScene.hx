@@ -10,6 +10,8 @@ import ui.GameHUD;
 import utils.ColorPalette;
 import utils.GameConstants;
 import entities.Player;
+import entities.Enemy;
+import entities.AIState;
 import systems.effects.particles.ParticleSystem;
 import entities.effects.RainEffect;
 
@@ -62,6 +64,8 @@ class GameScene extends Scene {
     
     // === Entities ===
     var player: Player;
+    var enemies: Array<entities.Enemy>;
+    var enemyContainer: h2d.Object;
     var rainEffect: RainEffect;
     
     public function new(app: Main) {
@@ -92,11 +96,17 @@ class GameScene extends Scene {
         
         // === Create entities ===
         ghostContainer = new h2d.Object(worldContainer);
+        enemyContainer = new h2d.Object(worldContainer);
+        enemies = [];
+        
         player = new Player(worldContainer, collisionWorld, ghostContainer);
         
         // Get spawn point from level metadata
         var metadata = LevelLoader.loadMetadata(null);
         player.setPosGrid(metadata.playerSpawn.x, metadata.playerSpawn.y);
+        
+        // Spawn some test enemies
+        spawnTestEnemies();
         
         // === Setup camera ===
         gameCamera.follow(player);
@@ -133,6 +143,27 @@ class GameScene extends Scene {
         rainEffect.update(dt);
         particleSystem.update(dt);
         gameHUD.update(dt);
+        
+        // === Update enemies ===
+        for (enemy in enemies) {
+            if (enemy.parent != null) {
+                enemy.update(dt);
+            }
+        }
+        
+        // Clean up dead enemies
+        enemies = enemies.filter(e -> e.parent != null);
+        
+        // === Check combat ===
+        // Check player attacks against enemies
+        var playerHitbox = player.getCurrentHitbox();
+        if (playerHitbox != null) {
+            var hits = playerHitbox.checkHits(cast enemies);
+            for (hit in hits) {
+                playerHitbox.applyHit(hit);
+                // TODO: Add hit effects
+            }
+        }
         
         // === Update debug rendering ===
         if (debugRenderer.isEnabled()) {
@@ -274,6 +305,28 @@ class GameScene extends Scene {
         }
         
         gameHUD.updateDebugText(text);
+    }
+    
+    /**
+     * Spawn test enemies for combat testing
+     */
+    function spawnTestEnemies():Void {
+        // Spawn a few enemies around the map
+        var spawnPoints = [
+            {x: 15, y: 10},
+            {x: 25, y: 15},
+            {x: 20, y: 20},
+            {x: 10, y: 18}
+        ];
+        
+        for (spawn in spawnPoints) {
+            var enemy = new entities.Enemy(enemyContainer, collisionWorld, player);
+            enemy.setPosGrid(spawn.x, spawn.y);
+            enemies.push(enemy);
+            
+            // Start with patrol behavior
+            enemy.currentState = AIState.Patrol;
+        }
     }
     
     override public function exit(): Void {

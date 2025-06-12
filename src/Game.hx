@@ -41,6 +41,10 @@ class Game {
     /** Global game speed multiplier (for slow-mo effects) */
     public var gameSpeed:Float = 1.0;
     
+    /** Hit pause system */
+    var hitPauseTime:Float = 0;
+    public var isHitPaused:Bool = false;
+    
     /**
      * Create the game instance
      * @param app Reference to the main application
@@ -90,6 +94,15 @@ class Game {
      */
     public function fixedUpdate(dt:Float) {
         if (isPaused) return;
+        
+        // Handle hit pause
+        if (hitPauseTime > 0) {
+            hitPauseTime -= dt;
+            if (hitPauseTime <= 0) {
+                isHitPaused = false;
+            }
+            return; // Skip all updates during hit pause
+        }
         
         // Apply game speed multiplier
         var scaledDt = dt * gameSpeed;
@@ -176,6 +189,17 @@ class Game {
      */
     public function switchScene(sceneName:String) {
         sceneManager.switchTo(sceneName);
+    }
+    
+    /**
+     * Trigger a hit pause effect
+     * Freezes the game momentarily to emphasize impact
+     * 
+     * @param duration How long to pause (in seconds)
+     */
+    public function triggerHitPause(duration:Float = 0.05) {
+        hitPauseTime = duration;
+        isHitPaused = true;
     }
     
     /**

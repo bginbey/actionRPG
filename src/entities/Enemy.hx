@@ -65,6 +65,9 @@ class Enemy extends Entity implements IHealth {
     public var sightRange:Float = GameConstants.ENEMY_SIGHT_RANGE;
     public var attackRange:Float = GameConstants.ENEMY_ATTACK_RANGE;
     
+    // Callbacks
+    public var onHitPlayer:Void->Void;
+    
     function get_health():Float return _health;
     function set_health(v:Float):Float {
         _health = Math.max(0, v);
@@ -291,7 +294,10 @@ class Enemy extends Entity implements IHealth {
         // Deal damage if in range (with slight delay for visual feedback)
         haxe.Timer.delay(() -> {
             if (!_isDead && distanceTo(player) <= attackRange) {
-                player.takeDamage(GameConstants.ENEMY_ATTACK_DAMAGE, this);
+                var damaged = player.takeDamage(GameConstants.ENEMY_ATTACK_DAMAGE, this);
+                if (damaged > 0 && onHitPlayer != null) {
+                    onHitPlayer();
+                }
             }
         }, 100);
     }

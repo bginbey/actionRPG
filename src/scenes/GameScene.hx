@@ -159,9 +159,16 @@ class GameScene extends Scene {
         var playerHitbox = player.getCurrentHitbox();
         if (playerHitbox != null) {
             var hits = playerHitbox.checkHits(cast enemies);
-            for (hit in hits) {
-                playerHitbox.applyHit(hit);
-                // TODO: Add hit effects
+            if (hits.length > 0) {
+                // Apply hit pause and screen shake only once per frame
+                app.game.triggerHitPause(GameConstants.HIT_PAUSE_DURATION);
+                gameCamera.shake(0.5); // Player hitting enemies
+                
+                // Apply damage to all hit enemies
+                for (hit in hits) {
+                    playerHitbox.applyHit(hit);
+                    // TODO: Add hit particles
+                }
             }
         }
         
@@ -323,6 +330,12 @@ class GameScene extends Scene {
             var enemy = new entities.Enemy(enemyContainer, collisionWorld, player);
             enemy.setPosGrid(spawn.x, spawn.y);
             enemies.push(enemy);
+            
+            // Set hit callback for screen effects
+            enemy.onHitPlayer = () -> {
+                app.game.triggerHitPause(GameConstants.HIT_PAUSE_DURATION * 0.5);
+                gameCamera.shake(0.4); // Enemies hitting player
+            };
             
             // Start with patrol behavior
             enemy.currentState = AIState.Patrol;

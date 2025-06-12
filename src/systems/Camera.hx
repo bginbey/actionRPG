@@ -26,7 +26,7 @@ class Camera {
     var shakeX:Float = 0;
     var shakeY:Float = 0;
     var shakeTrauma:Float = 0;
-    var shakeDecay:Float = 0.8;
+    var shakeDecay:Float = 2.0; // Balanced decay for tight but noticeable shake
     var shakeMaxOffset:Float = GameConstants.CAMERA_SHAKE_INTENSITY;
     
     // Debug mode

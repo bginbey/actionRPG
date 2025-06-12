@@ -76,7 +76,7 @@ class GameConstants {
     public static inline var CAMERA_SHAKE_DURATION:Float = 0.5;
     
     /** Camera shake intensity (max offset in pixels) */
-    public static inline var CAMERA_SHAKE_INTENSITY:Float = 10.0;
+    public static inline var CAMERA_SHAKE_INTENSITY:Float = 8.0;
     
     // === Particle Constants ===
     /** Base rain emission rate (particles per second) */

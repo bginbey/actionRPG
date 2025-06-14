@@ -3,6 +3,7 @@
 ## Key Documents
 - **Philosophy**: DEVELOPMENT_PHILOSOPHY.md - Core principles, conventions, patterns
 - **Roadmap**: DEVELOPMENT_ROADMAP.md - Development phases and milestones
+- **Deployment**: docs/github-pages-deployment.md - How to deploy to GitHub Pages
 
 ## Core Principles
 1. **Reuse First** - Always check for existing code before creating new

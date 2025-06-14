@@ -45,20 +45,6 @@ jobs:
           bin/game.js.map
           bin/index.html
         retention-days: 7
-    
-    - name: Setup Pages deployment (main branch only)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: |
-        mkdir -p public
-        cp bin/game.js public/
-        cp bin/game.js.map public/
-        cp bin/index.html public/
-    
-    - name: Upload Pages artifact
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: public
 
   build-native:
     name: Build Native Version (Linux/Windows)
@@ -124,20 +110,3 @@ jobs:
         name: native-build-${{ matrix.os }}
         path: bin/game.hl
         retention-days: 7
-
-  deploy-pages:
-    name: Deploy to GitHub Pages
-    needs: build-web
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    
-    steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4

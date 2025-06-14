@@ -6,6 +6,15 @@ A pixel-art action RPG built with Heaps.io, inspired by Hyper Light Drifter's fl
 
 **[Play the game online!](https://bginbey.github.io/actionRPG/)**
 
+### Game Controls
+- **Movement**: WASD or Arrow Keys
+- **Attack**: J or X (3-hit combo system)
+- **Dash**: Space or Shift
+- **Toggle Rain**: R
+- **Show/Hide Help**: H
+- **Debug View**: ` (backtick)
+- **Return to Menu**: ESC
+
 **[Tutorial: Build a 2D Action RPG](https://bginbey.github.io/heapsDocs/tutorials/00-overview/)**
 
 **[Heaps Game Engine Guide](https://bginbey.github.io/heapsDocs/)**

@@ -8,6 +8,8 @@ A pixel-art action RPG built with Heaps.io, inspired by Hyper Light Drifter's fl
 
 **[Tutorial: Build a 2D Action RPG](https://bginbey.github.io/heapsDocs/tutorials/00-overview/)**
 
+**[Heaps Game Engine Guide](https://bginbey.github.io/heapsDocs/)**
+
 ## 🎮 Project Status
 
 ### ✅ Phase 1: Foundation (Complete)

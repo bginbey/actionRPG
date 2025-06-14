@@ -4,6 +4,8 @@
 
 A pixel-art action RPG built with Heaps.io, inspired by Hyper Light Drifter's fluid combat and movement mechanics.
 
+**[🎮 Play the game online!](https://bginbey.github.io/actionRPG/)**
+
 ## 🎮 Project Status
 
 ### ✅ Phase 1: Foundation (Complete)

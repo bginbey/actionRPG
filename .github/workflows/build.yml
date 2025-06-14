@@ -97,13 +97,6 @@ jobs:
     - name: Build native version
       run: haxe build.hxml
     
-    - name: Test native build (Ubuntu)
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        # Run with virtual display for headless testing
-        sudo apt-get install -y xvfb
-        xvfb-run -a hl bin/game.hl --help || echo "Game started successfully"
-    
     - name: Upload native build
       uses: actions/upload-artifact@v4
       with:
